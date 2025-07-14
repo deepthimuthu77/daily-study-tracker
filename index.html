@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daily Study Tracker</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>" />
+
+    <style>
+      body {
+        font-family: "Helvetica Neue", sans-serif;
+        background-color: #f4eae3;
+        color: #2e2e2e;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .tracker-container {
+        background-color: #fffdfc;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
+        width: 100%;
+      }
+
+      h1 {
+        text-align: center;
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: #3e3e3e;
+      }
+
+      label {
+        display: block;
+        margin: 15px 0 5px;
+        font-weight: 500;
+      }
+
+      input[type="text"],
+      input[type="number"],
+      input[type="date"],
+      select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background-color: #fdf8f4;
+      }
+
+      input[type="range"] {
+        width: 100%;
+      }
+
+      .range-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #999;
+      }
+
+      button {
+        margin-top: 20px;
+        width: 100%;
+        padding: 12px;
+        background-color: #c6a27e;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #b3926f;
+      }
+
+      #message {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 6px;
+        text-align: center;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="tracker-container">
+      <h1>Daily Study Tracker</h1>
+      <form id="form">
+        <label for="date">Date</label>
+        <input type="date" id="date" name="Date" required />
+
+        <label for="mood">Mood</label>
+        <select id="mood" name="Mood">
+          <option value="" disabled selected>Select your Mood</option>
+          <option value="😎 Focused">😎 Focused</option>
+          <option value="🤓 Nerd Mode">🤓 Nerd Mode</option>
+          <option value="🎯 Determined">🎯 Determined</option>
+          <option value="🤔 Confused">🤔 Confused</option>
+          <option value="😩 Tired">😩 Tired</option>
+          <option value="😰 Stressed">😰 Stressed</option>
+          <option value="😫 Overwhelmed">😫 Overwhelmed</option>
+        </select>
+
+        <label for="task">Task / Topic Worked On</label>
+        <input
+          type="text"
+          id="task"
+          name="Task / Topic Worked On"
+          placeholder="e.g. JavaScript Loops.."
+          required
+        />
+
+        <label for="productivity">Productivity Score</label>
+        <input
+          type="range"
+          id="productivity"
+          name="Productivity Score"
+          min="1"
+          max="5"
+        />
+        <div class="range-label">
+          <span>1</span>
+          <span>5</span>
+        </div>
+
+        <label for="timeSpent">Time Spent (in minutes)</label>
+        <input
+          type="number"
+          id="timeSpent"
+          name="Time Spent (in minutes)"
+          placeholder="e.g. 90"
+          required
+        />
+
+        <button id="submit-button" type="submit">Submit Entry</button>
+        <div id="message"></div>
+      </form>
+    </div>
+
+    <script>
+      document.getElementById("date").valueAsDate = new Date();
+
+      const form = document.getElementById("form");
+      const submitButton = document.getElementById("submit-button");
+      const messageDiv = document.getElementById("message");
+
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        messageDiv.textContent = "Submitting...";
+        messageDiv.style.display = "block";
+        messageDiv.style.backgroundColor = "beige";
+        messageDiv.style.color = "black";
+        submitButton.disabled = true;
+
+        try {
+          const formData = new FormData(this);
+          const formDataObj = {};
+          for (let [key, value] of formData.entries()) {
+            formDataObj[key] = value;
+          }
+
+          const scriptURL =
+            "https://script.google.com/macros/s/AKfycbzj0K9Rqgl1XoBL_AKz3ANejJfzfgXTk08UghTHfkj0sK_d2LRbSj_DYMHIrl0F5fWhKw/exec";
+
+          const response = await fetch(scriptURL, {
+            method: "POST",
+            body: JSON.stringify(formDataObj),
+            headers: {
+              "Content-Type": "text/plain;charset=utf-8",
+            },
+          });
+
+          const data = await response.json();
+
+          if (data.status === "success") {
+            messageDiv.textContent =
+              data.message || "Data submitted successfully!";
+            messageDiv.style.backgroundColor = "#48c78e";
+            messageDiv.style.color = "white";
+            form.reset();
+          } else {
+            throw new Error(data.message || "Submission failed");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          messageDiv.textContent = "Error: " + error.message;
+          messageDiv.style.backgroundColor = "#f14668";
+          messageDiv.style.color = "white";
+        } finally {
+          submitButton.disabled = false;
+          setTimeout(() => {
+            messageDiv.style.display = "none";
+          }, 4000);
+        }
+      });
+    </script>
+  </body>
+</html>
